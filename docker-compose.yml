@@ -19,6 +19,8 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+    depends_on:
+      - db  # The app service depends on the db service
   db:
     image: postgres:13-alpine
     volumes:
@@ -27,8 +29,7 @@ services:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
-    # depends_on:
-    #   - db
+
 
 volumes:
   dev-db-data:
