@@ -34,6 +34,7 @@ ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']  # Add other hosts as nece
 # Application definition
 
 INSTALLED_APPS = [
+    'recipe',
     'user',
     'drf_spectacular',
     'rest_framework.authtoken',
