@@ -16,6 +16,21 @@ from recipe.serializers import IngredientSerializer  # type: ignore
 
 INGREDIENT_URL = reverse('recipe:ingredient-list')
 
+def create_recipe(user, **params):
+    """ Create and return a sample recipe. """
+
+    defaults = Recipe.objects.create(
+
+            user = user,
+            title= 'sample recipe name',
+            time_minutes = 5,
+            price = Decimal('1.5'),
+            description = 'sample recipe desciription'
+        
+    ) 
+
+    
+    return defaults
 
 def create_user(email = 'test@example.com', password = 'test123'):
     """ create and return user. """
@@ -104,5 +119,45 @@ class PrivateIngredientApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         ingredients = Ingredient.objects.filter(user = self.user)
         self.assertFalse(ingredients.exists())
+
+
+    def test_filter_ingredient_assigned_to_recipe(self):
+        """ Test listing ingredients by those assigied to recipes. """
+        int1= Ingredient.objects.create(user = self.user, name='x1')
+        int2= Ingredient.objects.create(user = self.user, name='x2')
+
+        recipe = create_recipe(user = self.user)
+        recipe.ingredients.add(int1)
+
+        res = self.client.get(INGREDIENT_URL, {'assigned_only': 1})
+
+
+        s1 = IngredientSerializer(int1)
+        s2 = IngredientSerializer(int2)
+
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+
+    def test_filterd_by_ingredients_unique(self):
+        """ Test filtered ingredient return unique list """
+
+        int1= Ingredient.objects.create(user = self.user, name='eggs')
+        Ingredient.objects.create(user = self.user, name='x2')
+
+        recipe1 = create_recipe(user = self.user, title = 'eggs fries')
+        recipe2 = create_recipe(user = self.user, title = 'eggs blowed')
+
+        recipe1.ingredients.add(int1)
+        recipe2.ingredients.add(int1)
+
+
+        res = self.client.get(INGREDIENT_URL, {'assigned_only': 1})
+
+
+
+        self.assertEqual(len(res.data), 1)
+   
+
 
 
